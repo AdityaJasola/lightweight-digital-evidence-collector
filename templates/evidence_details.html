@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ e.evidence_code }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Evidence {{ e.evidence_code }}</h1>
+  <div class="actions no-print">
+    <a class="btn" href="{{ url_for('main.download', code=e.evidence_code) }}">Download Evidence</a>
+    <button type="button" class="btn" data-print>Print Evidence Documentation</button>
+  </div>
+</div>
+<p class="print-only">Evidence documentation generated from Digital Evidence Collector. Times are UTC.</p>
+
+<section>
+  <h2>Evidence Information</h2>
+  <table class="kv">
+    <tr><th>Evidence ID</th><td>{{ e.evidence_code }}</td></tr>
+    <tr><th>Evidence name</th><td>{{ e.evidence_name }}</td></tr>
+    <tr><th>Original filename</th><td class="break">{{ e.original_filename }}</td></tr>
+    <tr><th>Evidence category</th><td>{{ e.evidence_category }}</td></tr>
+    <tr><th>Description</th><td class="pre">{{ e.description if e.description else 'No description provided.' }}</td></tr>
+    <tr><th>Collected by</th><td>{{ e.collected_by }}</td></tr>
+    <tr><th>Collection timestamp</th><td>{{ e.collected_at_utc | utc }}</td></tr>
+    <tr><th>File size</th><td>{{ e.file_size | filesize }} ({{ e.file_size }} bytes)</td></tr>
+  </table>
+</section>
+
+<section id="integrity">
+  <h2>Integrity Information</h2>
+  <table class="kv">
+    <tr><th>Algorithm</th><td>SHA-256</td></tr>
+    <tr><th>Original recorded hash</th>
+      <td>
+        <code class="hash" id="sha-value">{{ e.sha256_hash }}</code>
+        <button type="button" class="btn btn-small no-print" data-copy="#sha-value">Copy SHA-256 Hash</button>
+        <span class="copy-status no-print" role="status" aria-live="polite"></span>
+      </td></tr>
+    <tr><th>Latest verification result</th>
+      <td>{% if latest %}<span class="status status-{{ latest.verification_status | lower }}">{{ latest.verification_status }}</span>
+          {% else %}<span class="muted">Not verified yet</span>{% endif %}</td></tr>
+    <tr><th>Latest verification time</th><td>{{ latest.verified_at_utc | utc if latest else '-' }}</td></tr>
+  </table>
+
+  <form method="post" action="{{ url_for('main.verify', code=e.evidence_code) }}" class="no-print verify-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-primary">Verify Integrity</button>
+    <span class="hint">Recalculates the file's SHA-256 and compares it with the original hash. Nothing is modified.</span>
+  </form>
+</section>
+
+<section>
+  <h2>Verification History</h2>
+  {% if history %}
+  <div class="table-scroll">
+  <table class="data">
+    <thead><tr><th>Check</th><th>Result</th><th>Verified (UTC)</th><th>Previous recorded hash</th><th>Newly calculated hash</th></tr></thead>
+    <tbody>
+    {% for h in history %}
+      <tr>
+        <td>#{{ h.id }}</td>
+        <td><span class="status status-{{ h.verification_status | lower }}">{{ h.verification_status }}</span></td>
+        <td class="nowrap">{{ h.verified_at_utc }}</td>
+        <td><code class="hash small">{{ h.expected_hash }}</code></td>
+        <td>{% if h.actual_hash %}<code class="hash small">{{ h.actual_hash }}</code>{% else %}<span class="muted">Not available (file missing)</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty"><p>This evidence has not been verified yet.</p>
+    <p class="muted">Use Verify Integrity to record the first check.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

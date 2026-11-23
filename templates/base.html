@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Overview{% endblock %} - Digital Evidence Collector</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <div class="brand">
+        <span class="brand-name">DIGITAL EVIDENCE COLLECTOR</span>
+        <span class="brand-sub">Evidence Collection &amp; Integrity Documentation</span>
+      </div>
+      <nav class="nav" aria-label="Main">
+        {% set ep = request.endpoint %}
+        <a href="{{ url_for('main.dashboard') }}" {% if ep == 'main.dashboard' %}aria-current="page"{% endif %}>Overview</a>
+        <a href="{{ url_for('main.records') }}" {% if ep in ('main.records', 'main.details') %}aria-current="page"{% endif %}>Evidence Records</a>
+        <a href="{{ url_for('main.collect') }}" {% if ep == 'main.collect' %}aria-current="page"{% endif %}>Collect Evidence</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p class="notice notice-{{ category }}" role="status">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="wrap site-footer">
+    Academic demonstration tool. Not a certified forensic acquisition platform.
+  </footer>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

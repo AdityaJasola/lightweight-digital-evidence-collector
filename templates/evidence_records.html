@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Evidence Records{% endblock %}
+{% block content %}
+<div class="page-head"><h1>Evidence Records</h1></div>
+
+<form method="get" action="{{ url_for('main.records') }}" class="search" role="search">
+  <label for="q" class="visually-hidden">Search evidence</label>
+  <input type="search" id="q" name="q" value="{{ query }}" placeholder="Search by evidence ID, name or original filename">
+  <button type="submit" class="btn">Search</button>
+  {% if query %}<a href="{{ url_for('main.records') }}">Clear</a>{% endif %}
+</form>
+
+{% if records %}
+<div class="table-scroll">
+<table class="data">
+  <thead>
+    <tr><th>Evidence ID</th><th>Evidence Name</th><th>Original Filename</th><th>Category</th>
+        <th>Collected By</th><th>Collection Date</th><th class="num">File Size</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+  {% for r in records %}
+    <tr>
+      <td class="nowrap">{{ r.evidence_code }}</td>
+      <td>{{ r.evidence_name }}</td>
+      <td class="break">{{ r.original_filename }}</td>
+      <td>{{ r.evidence_category }}</td>
+      <td>{{ r.collected_by }}</td>
+      <td class="nowrap">{{ r.collected_at_utc }}</td>
+      <td class="num nowrap">{{ r.file_size | filesize }}</td>
+      <td class="nowrap"><a href="{{ url_for('main.details', code=r.evidence_code) }}">View Details</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="muted">{{ records | length }} record{{ '' if records | length == 1 else 's' }}{% if query %} matching "{{ query }}"{% endif %}. Times are UTC.</p>
+{% elif query %}
+<div class="empty"><p>No evidence matches "{{ query }}".</p>
+  <p class="muted">Try part of the evidence ID, the evidence name or the original filename.</p></div>
+{% else %}
+<div class="empty"><p>No evidence records yet.</p>
+  <p class="muted"><a href="{{ url_for('main.collect') }}">Collect the first piece of evidence</a> and it will appear here.</p></div>
+{% endif %}
+{% endblock %}

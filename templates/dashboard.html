@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Overview</h1>
+  <a class="btn btn-primary" href="{{ url_for('main.collect') }}">Collect New Evidence</a>
+</div>
+
+<dl class="summary">
+  <div><dt>Evidence records</dt><dd>{{ total }}</dd></div>
+  <div><dt>Integrity checks performed</dt><dd>{{ checks }}</dd></div>
+  <div>
+    <dt>Most recently collected</dt>
+    <dd class="summary-text">
+      {% if recent %}
+        <a href="{{ url_for('main.details', code=recent[0].evidence_code) }}">{{ recent[0].evidence_code }}</a>
+        <span class="muted">{{ recent[0].collected_at_utc | utc }}</span>
+      {% else %}<span class="muted">None yet</span>{% endif %}
+    </dd>
+  </div>
+</dl>
+
+<h2>Recently collected</h2>
+{% if recent %}
+<table class="data">
+  <thead><tr><th>Evidence ID</th><th>Name</th><th>Category</th><th>Collected (UTC)</th></tr></thead>
+  <tbody>
+  {% for r in recent %}
+    <tr>
+      <td><a href="{{ url_for('main.details', code=r.evidence_code) }}">{{ r.evidence_code }}</a></td>
+      <td>{{ r.evidence_name }}</td>
+      <td>{{ r.evidence_category }}</td>
+      <td>{{ r.collected_at_utc }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p><a href="{{ url_for('main.records') }}">View all evidence records</a></p>
+{% else %}
+<div class="empty">
+  <p>No evidence has been collected yet.</p>
+  <p class="muted">To begin, open Collect Evidence, choose a file and enter the evidence details. The system records a SHA-256 hash of the file at that moment so you can check it later.</p>
+</div>
+{% endif %}
+{% endblock %}
